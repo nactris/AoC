@@ -18,8 +18,9 @@ fn main() {
         Err(why) => panic!("couldn't read {}: {}", display, why),
         Ok(_) => {},
     }
-    let (passwd,_) = parse_steps(50,parse_line(s));
-    print!("The Password is: {}",passwd);
+    let (passwd_old,passwd_new,_) = parse_steps(50,parse_line(s));
+    print!("The Password is: {}\n",passwd_old);
+    print!("The New Password is: {}\n",passwd_new);
     
     
 }
@@ -41,13 +42,26 @@ steps
 
 }
 
-fn parse_steps(start: u8, steps:Vec<i32>) -> (i32,Vec<u8>){
+fn parse_steps(start: u8, steps:Vec<i32>) -> (i32,i32, Vec<u8>){
 let mut stops:Vec<u8> = vec![start];
 let mut tick = start;
+let mut passes = 0;
 for s in steps{
-    tick = ((s%100 +100 +tick as i32 )%100) as u8;
+    passes += (s/100).abs() as i32;
+    let fix_s = s%100;
+    if fix_s > (99- (tick as i32)) {
+       // println!("right pass");
+        passes+=1;
+    }
+    
+    if -fix_s >= (tick as i32) && tick != 0{
+     //   println!("left pass");
+        passes+=1;
+    }
+   // print!("{}, s:{}, fs:{}, {}\n",tick, s,fix_s, passes);
+    tick = ((fix_s+100 +tick as i32)%100) as u8;
     stops.push(tick);   
 }
-(stops.iter().filter(|&&n| n == 0).count() as i32, stops)
+(stops.iter().filter(|&&n| n == 0).count() as i32,passes, stops)
 
 }
